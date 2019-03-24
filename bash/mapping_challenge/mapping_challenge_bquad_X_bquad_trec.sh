@@ -1,0 +1,1 @@
+python -m torch.distributed.launch --master_port=8008 --nproc_per_node=$NGPUS mytools/test_net_mapping_challenge_X_bquad_trec.py | tee output/coco_mapping_challenge/e2e_bquad_rcnn_X_101_32x8d_FPN_1x_gpu3_trec/inference/coco_mapping_challenge_val/test_results.txt

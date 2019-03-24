@@ -1,0 +1,1 @@
+python tools/train_net.py --config-file "configs/coco_qinghai_lr0.001/e2e_bquad_rcnn_R_101_FPN_1x_gpu1_trec.yaml" && python mytools/test_net_qinghai_bquad_trec.py | tee output/qinghai_lr0.001/e2e_bquad_rcnn_R_101_FPN_1x_gpu1_trec/inference/coco_qinghai_test_trec/test_results.txt
