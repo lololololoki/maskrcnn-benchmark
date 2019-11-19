@@ -78,6 +78,8 @@ class ROIBoxHead(torch.nn.Module):
 
         loss_bquad = self.loss_evaluator(bquad_regression=bquad_regression, proposals=proposals, targets=targets)
 
+        loss_bquad = loss_bquad * self.cfg.MODEL.TQR.TQR_LOSS_WEIGHTS
+
         return x, all_proposals, dict(loss_bquad=loss_bquad)
 
         # if self.training:

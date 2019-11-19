@@ -26,5 +26,18 @@ dist/
 .idea
 
 # project dirs
+/build
 /datasets
 /models
+/output
+/imagenet
+/maskrcnn_benchmark_pre8008
+
+# files
+*.jpg
+*.png
+*.txt
+*.json
+*.xml
+*.pkl
+*.tar

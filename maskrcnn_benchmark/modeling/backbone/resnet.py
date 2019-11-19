@@ -195,6 +195,79 @@ def _make_stage(
         in_channels = out_channels
     return nn.Sequential(*blocks)
 
+class BottleneckWithFixedBatchNormDoubleHead(nn.Module):
+    def __init__(
+        self,
+        in_channels,
+        bottleneck_channels,
+        out_channels,
+        num_groups=1,
+        stride_in_1x1=True,
+        stride=1,
+    ):
+        super(BottleneckWithFixedBatchNormDoubleHead, self).__init__()
+
+        self.dh_downsample_dh = None
+        if in_channels != out_channels:
+            self.downsample = nn.Sequential(
+                Conv2d(
+                    in_channels, out_channels, kernel_size=1, stride=stride, bias=False
+                ),
+                FrozenBatchNorm2d(out_channels),
+            )
+
+        # The original MSRA ResNet models have stride in the first 1x1 conv
+        # The subsequent fb.torch.resnet and Caffe2 ResNe[X]t implementations have
+        # stride in the 3x3 conv
+        stride_1x1, stride_3x3 = (stride, 1) if stride_in_1x1 else (1, stride)
+
+        self.dh_conv1_dh = Conv2d(
+            in_channels,
+            bottleneck_channels,
+            kernel_size=1,
+            stride=stride_1x1,
+            bias=False,
+        )
+        self.dh_bn1_dh = FrozenBatchNorm2d(bottleneck_channels)
+        # TODO: specify init for the above
+
+        self.dh_conv2_dh = Conv2d(
+            bottleneck_channels,
+            bottleneck_channels,
+            kernel_size=3,
+            stride=stride_3x3,
+            padding=1,
+            bias=False,
+            groups=num_groups,
+        )
+        self.dh_bn2_dh = FrozenBatchNorm2d(bottleneck_channels)
+
+        self.dh_conv3_dh = Conv2d(
+            bottleneck_channels, out_channels, kernel_size=1, bias=False
+        )
+        self.dh_bn3_dh = FrozenBatchNorm2d(out_channels)
+
+    def forward(self, x):
+        residual = x
+
+        out = self.dh_conv1_dh(x)
+        out = self.dh_bn1_dh(out)
+        out = F.relu_(out)
+
+        out = self.dh_conv2_dh(out)
+        out = self.dh_bn2_dh(out)
+        out = F.relu_(out)
+
+        out0 = self.dh_conv3_dh(out)
+        out = self.dh_bn3_dh(out0)
+
+        if self.dh_downsample_dh is not None:
+            residual = self.dh_downsample_dh(x)
+
+        out += residual
+        out = F.relu_(out)
+
+        return out
 
 class BottleneckWithFixedBatchNorm(nn.Module):
     def __init__(

@@ -83,7 +83,45 @@ class FPN2MLPFeatureExtractor(nn.Module):
         x = F.relu(self.fc7(x))
 
         return x
-        
+
+class FPN2MLPFeatureExtractorDoubleHead(nn.Module):
+    """
+    Heads for FPN for classification
+    """
+
+    def __init__(self, cfg):
+        super(FPN2MLPFeatureExtractorDoubleHead, self).__init__()
+
+        resolution = cfg.MODEL.ROI_BOX_HEAD.POOLER_RESOLUTION
+        scales = cfg.MODEL.ROI_BOX_HEAD.POOLER_SCALES
+        sampling_ratio = cfg.MODEL.ROI_BOX_HEAD.POOLER_SAMPLING_RATIO
+        pooler = Pooler(
+            output_size=(resolution, resolution),
+            scales=scales,
+            sampling_ratio=sampling_ratio,
+        )
+        self.pooler = pooler
+
+        # input_size = cfg.MODEL.BACKBONE.OUT_CHANNELS * resolution ** 2
+        # representation_size = cfg.MODEL.ROI_BOX_HEAD.MLP_HEAD_DIM
+        # self.fc6_pbox = nn.Linear(input_size, representation_size)
+        # self.fc7_pbox = nn.Linear(representation_size, representation_size)
+        #
+        # for l in [self.fc6_pbox, self.fc7_pbox]:
+        #     # Caffe2 implementation uses XavierFill, which in fact
+        #     # corresponds to kaiming_uniform_ in PyTorch
+        #     nn.init.kaiming_uniform_(l.weight, a=1)
+        #     nn.init.constant_(l.bias, 0)
+
+    def forward(self, x, proposals):
+        x = self.pooler(x, proposals)
+
+        # x = x.view(x.size(0), -1)
+        # x = F.relu(self.fc6_pbox(x))
+        # x = F.relu(self.fc7_pbox(x))
+
+        return x
+
 # MY ATTENTION
 class FPN2MLPFeatureExtractorMyAT(nn.Module):
     """
@@ -322,6 +360,7 @@ _ROI_BOX_FEATURE_EXTRACTORS = {
     "FPN2MLPFeatureExtractorICSTN": FPN2MLPFeatureExtractorICSTN,
     "MobileNetV2FeatureExtractor": MobileNetV2FeatureExtractor,
     "FPNMobileQuadFeatureExtractor": FPN2MLPFeatureExtractor,
+    "FPN2MLPFeatureExtractorDoubleHead": FPN2MLPFeatureExtractorDoubleHead
 }
 
 

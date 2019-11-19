@@ -117,7 +117,7 @@ class FastRCNNLossComputation(object):
         self._proposals = proposals
         return proposals
 
-    def __call__(self, class_logits=None, box_regression=None, bquad_regression=None, proposals=None, targets=None):
+    def __call__(self, class_logits=None, box_regression=None, bquad_regression=None, proposals=None, targets=None, tqr_loss_weights=None):
         """
         Computes the loss for Faster R-CNN.
         This requires that the subsample method has been called beforehand.

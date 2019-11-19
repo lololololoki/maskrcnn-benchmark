@@ -22,7 +22,7 @@ def main():
     parser = argparse.ArgumentParser(description="PyTorch Object Detection Inference")
     parser.add_argument(
         "--config-file",
-        default="configs/coco_qinghai_lr0.002_512/e2e_bquad_rcnn_X_101_32x8d_FPN_1x_gpu3_bquad_ICSTN_4.yaml",
+        default="configs/coco_qinghai_suburban_correct/e2e_bquad_rcnn_X_101_32x8d_FPN_1x_gpu3_trec.yaml",
         metavar="FILE",
         help="path to config file",
     )

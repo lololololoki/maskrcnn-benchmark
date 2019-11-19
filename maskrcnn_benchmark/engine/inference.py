@@ -657,7 +657,7 @@ def myinference(
                 dataset.coco, coco_results[iou_type], file_path, iou_type
             )
             results.update(res)
-    if cfg is not None :
+    if False and cfg is not None :
         if cfg.MODEL.BQUAD_ON:
             with tempfile.NamedTemporaryFile() as f:
                 coco_bquad_bbox_results = prepare_for_coco_bquad_bbox(predictions, dataset)

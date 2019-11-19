@@ -1,6 +1,9 @@
 # Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved.
 from torch import nn
-
+from maskrcnn_benchmark.modeling.backbone.resnet import _make_stage, BottleneckWithFixedBatchNormDoubleHead
+from maskrcnn_benchmark.layers import Conv2d
+import math
+from torch.nn import functional as F
 
 class FastRCNNPredictor(nn.Module):
     def __init__(self, config, pretrained=None):
@@ -51,6 +54,112 @@ class FPNPredictor(nn.Module):
         return scores, bbox_deltas
 
 
+class FPNPredictorDoubleHead(nn.Module):
+    def __init__(self, cfg):
+        super(FPNPredictorDoubleHead, self).__init__()
+        num_classes = cfg.MODEL.ROI_BOX_HEAD.NUM_CLASSES
+        # representation_size = cfg.MODEL.ROI_BOX_HEAD.MLP_HEAD_DIM
+        resolution = cfg.MODEL.ROI_BOX_HEAD.POOLER_RESOLUTION
+        input_size = cfg.MODEL.BACKBONE.OUT_CHANNELS * resolution ** 2
+
+        representation_size = cfg.MODEL.ROI_BOX_HEAD.MLP_HEAD_DIM
+        self.fc6_tqr_fc_head = nn.Linear(input_size, representation_size)
+        self.fc7_tqr_fc_head = nn.Linear(representation_size, representation_size)
+
+        for l in [self.fc6_tqr_fc_head, self.fc7_tqr_fc_head]:
+            # Caffe2 implementation uses XavierFill, which in fact
+            # corresponds to kaiming_uniform_ in PyTorch
+            nn.init.kaiming_uniform_(l.weight, a=1)
+            nn.init.constant_(l.bias, 0)
+
+        self.cls_score_cls_tqr = nn.Linear(representation_size, num_classes)
+        self.pred_cls_tqr = nn.Linear(representation_size, num_classes * 4)
+
+        self.upchannels_conv1x1_tqr = Conv2d(
+            cfg.MODEL.BACKBONE.OUT_CHANNELS,
+            representation_size,
+            kernel_size=1,
+            stride=1,
+            bias=False,
+        )
+        self.upchannels_right_convs_tqr = nn.Sequential(
+                # 3x3x256 conv
+                nn.Conv2d(cfg.MODEL.BACKBONE.OUT_CHANNELS, cfg.MODEL.BACKBONE.OUT_CHANNELS, 3, 1, 1, bias=False),
+                nn.BatchNorm2d(cfg.MODEL.BACKBONE.OUT_CHANNELS),
+                # 1x1x1024 cnv
+                nn.Conv2d(cfg.MODEL.BACKBONE.OUT_CHANNELS, representation_size, 1, 1, 0, bias=False),
+                nn.BatchNorm2d(representation_size),
+            )
+
+        self.convs_reg_tqr = _make_stage(
+            BottleneckWithFixedBatchNormDoubleHead,
+            representation_size,
+            256,
+            representation_size,
+            cfg.MODEL.TQR.ROI_TQR_HEAD.REG_CONVS_NUM,
+            1,
+            True,
+            1,
+        )
+
+        self.reg_avgpool_tqr = nn.AvgPool2d(kernel_size=7, stride=7)
+        self.fc_reg_tqr = nn.Linear(representation_size, representation_size)
+
+        self.cls_score_reg_tqr = nn.Linear(representation_size, num_classes)
+        self.pred_reg_tqr = nn.Linear(representation_size, num_classes * 4)
+
+        self._initialize_weights()
+
+        # other init
+        nn.init.normal_(self.cls_score_cls_tqr.weight, std=0.01)
+        nn.init.normal_(self.pred_cls_tqr.weight, std=0.001)
+        for l in [self.cls_score_cls_tqr, self.pred_cls_tqr]:
+            nn.init.constant_(l.bias, 0)
+
+    def forward(self, x):
+        x_cls = x
+        x_cls = x_cls.view(x_cls.size(0), -1)
+        x_cls = F.relu(self.fc6_tqr_fc_head(x_cls))
+        x_cls = F.relu(self.fc7_tqr_fc_head(x_cls))
+
+        scores_cls = self.cls_score_cls_tqr(x_cls)
+        pred_cls = self.pred_cls_tqr(x_cls)
+
+        # residual = x
+
+        x_l = self.upchannels_conv1x1_tqr(x)
+        x_r = self.upchannels_right_convs_tqr(x)
+        x = x_l + x_r
+        x = F.relu(x)
+
+        x = self.convs_reg_tqr(x)
+
+        x = self.reg_avgpool_tqr(x)
+
+        x = x.view(x.size(0), -1)
+
+        x = F.relu(self.fc_reg_tqr(x))
+
+        scores_reg = self.cls_score_reg_tqr(x)
+        pred_reg = self.pred_reg_tqr(x)
+
+        return scores_cls, pred_reg
+
+    def _initialize_weights(self):
+        for m in self.modules():
+            if isinstance(m, nn.Conv2d):
+                n = m.kernel_size[0] * m.kernel_size[1] * m.out_channels
+                m.weight.data.normal_(0, math.sqrt(2. / n))
+                if m.bias is not None:
+                    m.bias.data.zero_()
+            elif isinstance(m, nn.BatchNorm2d):
+                m.weight.data.fill_(1)
+                m.bias.data.zero_()
+            elif isinstance(m, nn.Linear):
+                n = m.weight.size(1)
+                m.weight.data.normal_(0, 0.01)
+                m.bias.data.zero_()
+
 class MobileNetV2Predictor(nn.Module):
     def __init__(self, config, pretrained=None):
         super(MobileNetV2Predictor, self).__init__()
@@ -87,6 +196,7 @@ _ROI_BOX_PREDICTOR = {
     "FPNPredictor": FPNPredictor,
     "MobileNetV2Predictor": MobileNetV2Predictor,
     "FPNMobileQuadPredictor": FPNPredictor,
+    "FPNPredictorDoubleHead": FPNPredictorDoubleHead
 }
 
 

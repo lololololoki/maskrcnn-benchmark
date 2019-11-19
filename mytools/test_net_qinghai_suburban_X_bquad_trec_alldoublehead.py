@@ -24,7 +24,7 @@ def main():
     parser.add_argument(
         "--config-file",
         # default="configs/coco_fujian_X-101/e2e_faster_rcnn_X_101_32x8d_FPN_1x_gpu3_bquad.yaml",
-        default="configs/coco_qinghai_suburban/e2e_bquad_rcnn_X_101_32x8d_FPN_1x_gpu3_trec.yaml",
+        default="configs/coco_qinghai_suburban_correct/e2e_bquad_rcnn_X_101_32x8d_FPN_1x_gpu3_trec_alldoublehead.yaml",
         metavar="FILE",
         help="path to config file",
     )
@@ -37,30 +37,32 @@ def main():
     )
     parser.add_argument(
         "--weight",
-        default="output/coco_qinghai_suburban/e2e_bquad_rcnn_X_101_32x8d_FPN_1x_gpu3_trec/model_",
+        default="output/coco_qinghai_suburban_correct/e2e_bquad_rcnn_X_101_32x8d_FPN_1x_gpu6_trec_alldoublehead/model_",
         metavar="FILE",
         help="path to weight file",
     )
     parser.add_argument(
         "--begin",
-        default=100,
-        metavar=int,
+        default=1000,
+        type=int,
         help="weight begin",
     )
     parser.add_argument(
         "--end",
-        default=10000,
-        metavar=int,
+        default=30000,
+        type=int,
         help="weight end",
     )
     parser.add_argument(
         "--step",
         default=100,
-        metavar=int,
+        type=int,
         help="weight step",
     )
 
     args = parser.parse_args()
+
+    # print("--------------------", args.begin, type(args.begin))
 
     num_gpus = int(os.environ["WORLD_SIZE"]) if "WORLD_SIZE" in os.environ else 1
     distributed = num_gpus > 1
@@ -102,8 +104,8 @@ def main():
         _ = checkpointer.load(model_weight)
 
         iou_types = ("bbox",)
-        if cfg.MODEL.MASK_ON or cfg.MODEL.BQUAD_ON:
-            iou_types = iou_types + ("segm",)
+        # if cfg.MODEL.MASK_ON or cfg.MODEL.BQUAD_ON:
+        #     iou_types = iou_types + ("segm",)
         output_folders = [None] * len(cfg.DATASETS.TEST)
         if cfg.OUTPUT_DIR:
             dataset_names = cfg.DATASETS.TEST

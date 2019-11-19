@@ -144,6 +144,16 @@ _C.MODEL.RPN.MIN_SIZE = 0
 _C.MODEL.RPN.FPN_POST_NMS_TOP_N_TRAIN = 2000
 _C.MODEL.RPN.FPN_POST_NMS_TOP_N_TEST = 2000
 
+# ---------------------------------------------------------------------------- #
+# TQR options
+# ---------------------------------------------------------------------------- #
+_C.MODEL.TQR = CN()
+_C.MODEL.TQR.TQR_LOSS_WEIGHTS = 1.0
+_C.MODEL.TQR.ROI_TQR_HEAD = CN()
+_C.MODEL.TQR.ROI_TQR_HEAD.FEATURE_EXTRACTOR = ""
+_C.MODEL.TQR.ROI_TQR_HEAD.PREDICTOR = ""
+_C.MODEL.TQR.ROI_TQR_HEAD.CONV_HEAD_CHANNELS = 1024
+_C.MODEL.TQR.ROI_TQR_HEAD.REG_CONVS_NUM = 4
 
 # ---------------------------------------------------------------------------- #
 # ROI HEADS options
