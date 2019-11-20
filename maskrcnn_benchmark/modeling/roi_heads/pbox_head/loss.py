@@ -12,6 +12,7 @@ from maskrcnn_benchmark.modeling.balanced_positive_negative_sampler import (
 )
 from maskrcnn_benchmark.modeling.utils import cat
 
+import torchvision
 
 class FastRCNNLossComputation(object):
     """
@@ -160,8 +161,18 @@ class FastRCNNLossComputation(object):
             # 2018年12月17日12点55分
             # cond = bquad_loss < 10
             # bquad_loss = torch.where(cond, bquad_loss, bquad_loss / 2)
+
+            """
+            for RGB input
+            """
             cond = bquad_loss < 8
             bquad_loss = torch.where(cond, bquad_loss, (bquad_loss / 5) + 6.4)
+
+            """
+            for PAN&MUL input
+            """
+            # cond = bquad_loss < 5
+            # bquad_loss = torch.where(cond, bquad_loss, torch.tensor(5.0).to(device))
 
             return bquad_loss
 

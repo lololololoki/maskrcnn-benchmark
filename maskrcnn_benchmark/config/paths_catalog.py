@@ -153,6 +153,14 @@ class DatasetCatalog(object):
             "coco_canada_2_demo/images",
             "coco_canada_2_demo/voc_0712_test_trec.json",
         ),
+        "coco_shandong_pansharpening_test_trec": (
+            "coco_shandong_pansharpening/images",
+            "coco_shandong_pansharpening/voc_0712_test_trec.json",
+        ),
+        "coco_shandong_pansharpening_train_trec": (
+            "coco_shandong_pansharpening/images",
+            "coco_shandong_pansharpening/voc_0712_trainval_trec.json",
+        ),
     }
 
     @staticmethod

@@ -64,6 +64,10 @@ def do_train(
 
         scheduler.step()
 
+        # images_pan = images[1].to(device)
+        # images_mul = images[2].to(device)
+        # images = torch.cat((images_mul, images_pan), dim=0)
+
         images = images.to(device)
         targets = [target.to(device) for target in targets]
 

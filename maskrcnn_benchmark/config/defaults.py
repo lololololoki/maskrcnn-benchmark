@@ -99,6 +99,8 @@ _C.MODEL.BACKBONE.FREEZE_CONV_BODY_AT = 2
 _C.MODEL.BACKBONE.OUT_CHANNELS = 256 * 4
 # Attention Module
 _C.MODEL.BACKBONE.USE_ATTENTION_FPN = False
+# Pan Mul Image input option
+_C.MODEL.BACKBONE.USE_PANMULIMG_FPN = False
 
 # ---------------------------------------------------------------------------- #
 # RPN options

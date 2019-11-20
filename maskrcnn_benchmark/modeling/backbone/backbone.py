@@ -30,7 +30,8 @@ def build_resnet_fpn_backbone(cfg):
     )
     model = nn.Sequential(OrderedDict([("body", body), ("fpn", fpn)]))
     return model
-    
+
+
 def build_resnet_atfpn_backbone(cfg):
     body = resnet.ResNet(cfg)
     in_channels_stage2 = cfg.MODEL.RESNETS.RES2_OUT_CHANNELS
@@ -47,6 +48,25 @@ def build_resnet_atfpn_backbone(cfg):
     )
     model = nn.Sequential(OrderedDict([("body", body), ("ATfpn", ATfpn)]))
     return model
+
+
+def build_resnet_panmulimg_backbone(cfg):
+    body = resnet.ResNet(cfg)
+    in_channels_stage2 = cfg.MODEL.RESNETS.RES2_OUT_CHANNELS
+    out_channels = cfg.MODEL.BACKBONE.OUT_CHANNELS
+    fpn = fpn_module.FPN(
+        in_channels_list=[
+            in_channels_stage2,
+            in_channels_stage2 * 2,
+            in_channels_stage2 * 4,
+            in_channels_stage2 * 8,
+        ],
+        out_channels=out_channels,
+        top_blocks=fpn_module.LastLevelMaxPool(),
+    )
+    model = nn.Sequential(OrderedDict([("body", body), ("fpn", fpn)]))
+    return model
+
 
 def build_mobilenetv2_backbone(cfg):
     body = MobileNetV2.myMobileNetV2()
@@ -75,6 +95,8 @@ def build_backbone(cfg):
     if cfg.MODEL.BACKBONE.CONV_BODY.endswith("-FPN"):
         if cfg.MODEL.BACKBONE.USE_ATTENTION_FPN:
             return build_resnet_atfpn_backbone(cfg)
+        elif cfg.MODEL.BACKBONE.USE_PANMULIMG_FPN:
+            return build_resnet_panmulimg_backbone(cfg)
         else:
             return build_resnet_fpn_backbone(cfg)
     return build_resnet_backbone(cfg)

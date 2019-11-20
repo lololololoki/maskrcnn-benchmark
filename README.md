@@ -183,7 +183,7 @@ class MyDataset(object):
 That's it. You can also add extra fields to the boxlist, such as segmentation masks
 (using `structures.segmentation_mask.SegmentationMask`), or even your own instance type.
 
-For a full example of how the `COCODataset` is implemented, check [`maskrcnn_benchmark/data/datasets/coco.py`](maskrcnn_benchmark/data/datasets/coco.py).
+For a full example of how the `COCODataset` is implemented, check [`maskrcnn_benchmark/data/datasets/coco.py`](maskrcnn_benchmark/data/datasets/coco_pansharpening.py).
 
 ### Note:
 While the aforementioned example should work for training, we leverage the

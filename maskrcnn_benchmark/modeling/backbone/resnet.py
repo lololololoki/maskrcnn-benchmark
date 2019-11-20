@@ -19,6 +19,8 @@ from torch import nn
 from maskrcnn_benchmark.layers import FrozenBatchNorm2d
 from maskrcnn_benchmark.layers import Conv2d
 
+from .tfnet import Tfnet_res
+
 
 # ResNet stage specification
 StageSpec = namedtuple(
@@ -363,9 +365,52 @@ class StemWithFixedBatchNorm(nn.Module):
         return x
 
 
+class StemWithFixedBatchNormPanMulImg(nn.Module):
+    def __init__(self, cfg):
+        super(StemWithFixedBatchNormPanMulImg, self).__init__()
+
+        out_channels = cfg.MODEL.RESNETS.STEM_OUT_CHANNELS
+
+        self.conv1_MulPanImg = Conv2d(
+            5, out_channels, kernel_size=7, stride=2, padding=3, bias=False
+        )
+        self.bn1 = FrozenBatchNorm2d(out_channels)
+
+    def forward(self, x):
+        x = self.conv1_MulPanImg(x)
+        x = self.bn1(x)
+        x = F.relu_(x)
+        x = F.max_pool2d(x, kernel_size=3, stride=2, padding=1)
+        return x
+
+
+class StemWithFixedBatchNormPanMulImgPansharpening(nn.Module):
+    def __init__(self, cfg):
+        super(StemWithFixedBatchNormPanMulImgPansharpening, self).__init__()
+
+        out_channels = cfg.MODEL.RESNETS.STEM_OUT_CHANNELS
+
+        self.tfnet = Tfnet_res()
+        self.conv1_MulPanImg = Conv2d(
+            5, out_channels, kernel_size=7, stride=2, padding=3, bias=False
+        )
+        self.bn1 = FrozenBatchNorm2d(out_channels)
+
+    def forward(self, x):
+        x = self.conv1_MulPanImg(x)
+        x = self.bn1(x)
+        x = F.relu_(x)
+        x = F.max_pool2d(x, kernel_size=3, stride=2, padding=1)
+        return x
+
+
 _TRANSFORMATION_MODULES = {"BottleneckWithFixedBatchNorm": BottleneckWithFixedBatchNorm}
 
-_STEM_MODULES = {"StemWithFixedBatchNorm": StemWithFixedBatchNorm}
+_STEM_MODULES = {
+    "StemWithFixedBatchNorm": StemWithFixedBatchNorm,
+    "StemWithFixedBatchNormPanMulImg": StemWithFixedBatchNormPanMulImg,
+    "StemWithFixedBatchNormPanMulImgPansharpening": StemWithFixedBatchNormPanMulImgPansharpening
+}
 
 _STAGE_SPECS = {
     "R-50-C4": ResNet50StagesTo4,

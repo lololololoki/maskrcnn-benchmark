@@ -43,19 +43,19 @@ def main():
     )
     parser.add_argument(
         "--begin",
-        default=500,
+        default=3000,
         metavar=int,
-        help="weight begin",
+        help="weight begin",[]
     )
     parser.add_argument(
         "--end",
-        default=14500,
+        default=10000,
         metavar=int,
         help="weight end",
     )
     parser.add_argument(
         "--step",
-        default=500,
+        default=1000,
         metavar=int,
         help="weight step",
     )
@@ -93,6 +93,7 @@ def main():
         if weight == args.end:
             weight = weight - 1
 
+        args.weight = args.config_file.replace('configs', 'output').replace('.yaml', '/model_')
         model_weight = args.weight + "%07d"%weight + ".pth"
 
         # print (model_weight)
