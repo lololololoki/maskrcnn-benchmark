@@ -43,13 +43,13 @@ def main():
     )
     parser.add_argument(
         "--begin",
-        default=3000,
+        default=1000,
         metavar=int,
-        help="weight begin",[]
+        help="weight begin",
     )
     parser.add_argument(
         "--end",
-        default=10000,
+        default=1001,
         metavar=int,
         help="weight end",
     )

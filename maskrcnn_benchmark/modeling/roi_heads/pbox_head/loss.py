@@ -165,8 +165,10 @@ class FastRCNNLossComputation(object):
             """
             for RGB input
             """
+            # cond = bquad_loss < 8
+            # bquad_loss = torch.where(cond, bquad_loss, (bquad_loss / 5) + 6.4)
             cond = bquad_loss < 8
-            bquad_loss = torch.where(cond, bquad_loss, (bquad_loss / 5) + 6.4)
+            bquad_loss = torch.where(cond, bquad_loss, (bquad_loss / 10) + 7.2)
 
             """
             for PAN&MUL input
