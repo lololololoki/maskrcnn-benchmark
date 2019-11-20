@@ -26,7 +26,6 @@ dist/
 .idea
 
 # project dirs
-/build
 /datasets
 /models
 /output
