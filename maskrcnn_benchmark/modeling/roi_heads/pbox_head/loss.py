@@ -167,8 +167,8 @@ class FastRCNNLossComputation(object):
             """
             # cond = bquad_loss < 8
             # bquad_loss = torch.where(cond, bquad_loss, (bquad_loss / 5) + 6.4)
-            cond = bquad_loss < 8
-            bquad_loss = torch.where(cond, bquad_loss, (bquad_loss / 10) + 7.2)
+            cond = bquad_loss < 7
+            bquad_loss = torch.where(cond, bquad_loss, (bquad_loss / 20) + 6.6)
 
             """
             for PAN&MUL input
