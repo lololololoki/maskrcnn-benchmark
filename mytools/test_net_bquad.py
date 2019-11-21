@@ -49,7 +49,7 @@ def main():
     )
     parser.add_argument(
         "--end",
-        default=1001,
+        default=10000,
         metavar=int,
         help="weight end",
     )

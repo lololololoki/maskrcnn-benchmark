@@ -1,3 +1,6 @@
+# tqr loss < 8
+# cond = bquad_loss < 8
+# bquad_loss = torch.where(cond, bquad_loss, (bquad_loss / 5) + 6.4)
 MODEL:
   META_ARCHITECTURE: "GeneralizedRCNN"
   WEIGHT: "catalog://ImageNetPretrained/FAIR/20171220/X-101-32x8d"

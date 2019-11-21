@@ -17,14 +17,14 @@ def main():
     remove_images_without_annotations = True
     my_coco = COCODataset(ann_file, root, remove_images_without_annotations, transforms)
     for images, target, _ in my_coco:
-        image_pan = images[1]
-        image_mul = images[2]
-        image = torch.cat((image_mul, image_pan), dim=0)
-        print (image.shape, image_pan.shape, image_mul.shape)
-        print (image)
-        print (image_pan.max(), image_pan.min())
-        print (image_mul.max(), image_mul.min())
-        print (image.max(), image.min())
+        # image_pan = images[1]
+        # image_mul = images[2]
+        # image = torch.cat((image_mul, image_pan), dim=0)
+        # print (image.shape, image_pan.shape, image_mul.shape)
+        # print (image)
+        # print (image_pan.max(), image_pan.min())
+        # print (image_mul.max(), image_mul.min())
+        # print (image.max(), image.min())
         break
 
 
