@@ -6,30 +6,30 @@ import math
 class _Residual_Block(nn.Module):
     def __init__(self, channels):
         super(_Residual_Block, self).__init__()
-        self.conv1 = nn.Conv2d(
+        self.conv1_pansharpening = nn.Conv2d(
             in_channels=channels,
             out_channels=channels,
             kernel_size=3,
             stride=1,
             padding=1,
             bias=False)
-        self.bn1 = nn.BatchNorm2d(channels)
-        self.prelu = nn.PReLU()
-        self.conv2 = nn.Conv2d(
+        self.bn1_pansharpening = nn.BatchNorm2d(channels)
+        self.prelu_pansharpening = nn.PReLU()
+        self.conv2_pansharpening = nn.Conv2d(
             in_channels=channels,
             out_channels=channels,
             kernel_size=3,
             stride=1,
             padding=1,
             bias=False)
-        self.bn2 = nn.BatchNorm2d(channels)
+        self.bn2_pansharpening = nn.BatchNorm2d(channels)
 
     def forward(self, x):
         identity_data = x
-        output = self.prelu(self.bn1(self.conv1(x)))
-        output = self.bn2(self.conv2(output))
+        output = self.prelu_pansharpening(self.bn1_pansharpening(self.conv1_pansharpening(x)))
+        output = self.bn2_pansharpening(self.conv2_pansharpening(output))
         output = torch.add(output, identity_data)
-        output = self.prelu(output)
+        output = self.prelu_pansharpening(output)
         return output
 
 class ResNet(nn.Module):

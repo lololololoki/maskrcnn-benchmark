@@ -63,11 +63,15 @@ class CocoDetection(data.Dataset):
         img_mul_upsample = Image.open(os.path.join(self.root.replace('images', 'mul_upsample'),
                                                    path.replace('.jpg', '_mul.tif')))
 
+        img_pan_mul = Image.open(os.path.join(self.root.replace('images', 'pan_mul'),
+                                                   path.replace('.jpg', '.tif')))
+
         if self.transform is not None:
             img_pan = self.transform(img)
             img_mul_upsample = self.transform(img_mul_upsample)
+            img_pan_mul = self.transform(img_pan_mul)
 
-        return img, img_pan, img_mul_upsample, target
+        return img, img_pan, img_mul_upsample, img_pan_mul, target
 
     def __len__(self):
         return len(self.ids)
@@ -123,7 +127,7 @@ class COCODataset(CocoDetection):
         self.transforms = transforms
         # self.transforms = None
     def __getitem__(self, idx):
-        img, img_pan, img_mul_upsample, anno = super(COCODataset, self).__getitem__(idx)
+        img, img_pan, img_mul_upsample, img_pan_mul, anno = super(COCODataset, self).__getitem__(idx)
 
         # filter crowd annotations
         # TODO might be better to add an extra field
@@ -185,9 +189,10 @@ class COCODataset(CocoDetection):
 
             img_pan = tramsforms_img(img_pan)
             img_mul_upsample = tramsforms_img(img_mul_upsample)
+            img_pan_mul = tramsforms_img(img_pan_mul)
             img, target = self.transforms(img, target)
 
-            img_mul_pan = torch.cat((img_mul_upsample, img_pan), dim=0)
+            img_mul_pan = torch.cat((img_mul_upsample, img_pan, img_pan_mul), dim=0)
 
         return img_mul_pan, target, idx
 

@@ -29,6 +29,8 @@ cocos.extend([coco_qinghai_rural_test, coco_qinghai_rural_train,
 areas = ["Rural", "Suburban", "Urban"]
 images_sum = 0
 annotations_sum = 0
+max_side = 0
+max_side_sum = 0
 
 for idx, coco in enumerate(areas):
     # print (idx)
@@ -38,6 +40,13 @@ for idx, coco in enumerate(areas):
     images = len(coco_test.dataset['images']) + len(coco_train.dataset['images'])
     annotations = len(coco_test.dataset['annotations']) + len(coco_train.dataset['annotations'])
 
+    for ann in coco_train.dataset['annotations']:
+        max_side = max(max_side, ann['bbox'][2], ann['bbox'][3])
+        max_side_sum += max(ann['bbox'][2], ann['bbox'][3])
+    for ann in coco_test.dataset['annotations']:
+        max_side = max(max_side, ann['bbox'][2], ann['bbox'][3])
+        max_side_sum += max(ann['bbox'][2], ann['bbox'][3])
+
     images_sum += images
     annotations_sum += annotations
 
@@ -46,7 +55,8 @@ for idx, coco in enumerate(areas):
 
 print("Total images:{}".format(images_sum))
 print("Total annotations:{}".format(annotations_sum))
-
+print("Max Side:{}".format(max_side))
+print("Avg Side:{}".format(max_side_sum/annotations_sum))
 
 # coco_qinghai_4points = COCO("{}/voc_0712_trainval_4points.json".format("/home/jky-cuda8/data/qinghai"))
 # coco_qinghai_bquad = COCO("{}/voc_0712_test_bquad.json".format("/home/jky-cuda8/data/qinghai"))

@@ -377,7 +377,7 @@ class StemWithFixedBatchNormPanMulImg(nn.Module):
         self.bn1 = FrozenBatchNorm2d(out_channels)
 
     def forward(self, x):
-        x = self.conv1_MulPanImg(x)
+        x = self.conv1_MulPanImg(x[:, 0:5, :, :])
         x = self.bn1(x)
         x = F.relu_(x)
         x = F.max_pool2d(x, kernel_size=3, stride=2, padding=1)
@@ -392,12 +392,75 @@ class StemWithFixedBatchNormPanMulImgPansharpening(nn.Module):
 
         self.tfnet = Tfnet_res()
         self.conv1_MulPanImg = Conv2d(
+            4, out_channels, kernel_size=7, stride=2, padding=3, bias=False
+        )
+        self.bn1 = FrozenBatchNorm2d(out_channels)
+
+    def forward(self, x):
+        """
+
+        :param x: [3, 5, 512, 512]
+        :return:
+        """
+        x_mul = x[:, 0:4, :, :]
+        x_pan = x[:, 4:5, :, :]
+        # print("*********************", x_pan.shape)
+        x = self.tfnet(x_pan, x_mul)
+        x = self.conv1_MulPanImg(x)
+        x = self.bn1(x)
+        x = F.relu_(x)
+        x = F.max_pool2d(x, kernel_size=3, stride=2, padding=1)
+        return x
+
+
+class StemWithFixedBatchNormPanMulImgPansharpeningCatPan(nn.Module):
+    def __init__(self, cfg):
+        super(StemWithFixedBatchNormPanMulImgPansharpeningCatPan, self).__init__()
+
+        out_channels = cfg.MODEL.RESNETS.STEM_OUT_CHANNELS
+
+        self.tfnet = Tfnet_res()
+        self.conv1_MulPanImg = Conv2d(
             5, out_channels, kernel_size=7, stride=2, padding=3, bias=False
         )
         self.bn1 = FrozenBatchNorm2d(out_channels)
 
     def forward(self, x):
+        """
+
+        :param x: [3, 5, 512, 512]
+        :return:
+        """
+        x_mul = x[:, 0:4, :, :]
+        x_pan = x[:, 4:5, :, :]
+        # print("*********************", x_pan.shape)
+        x = self.tfnet(x_pan, x_mul)
+        x = torch.cat((x, x_pan), dim=1)
         x = self.conv1_MulPanImg(x)
+        x = self.bn1(x)
+        x = F.relu_(x)
+        x = F.max_pool2d(x, kernel_size=3, stride=2, padding=1)
+        return x
+
+
+class StemWithFixedBatchNormPansharpeningImg(nn.Module):
+    def __init__(self, cfg):
+        super(StemWithFixedBatchNormPansharpeningImg, self).__init__()
+
+        out_channels = cfg.MODEL.RESNETS.STEM_OUT_CHANNELS
+
+        self.conv1_MulPanImg = Conv2d(
+            4, out_channels, kernel_size=7, stride=2, padding=3, bias=False
+        )
+        self.bn1 = FrozenBatchNorm2d(out_channels)
+
+    def forward(self, x):
+        """
+
+        :param x: [3, 5, 512, 512]
+        :return:
+        """
+        x = self.conv1_MulPanImg(x[:, 5:9, :, :])
         x = self.bn1(x)
         x = F.relu_(x)
         x = F.max_pool2d(x, kernel_size=3, stride=2, padding=1)
@@ -409,7 +472,9 @@ _TRANSFORMATION_MODULES = {"BottleneckWithFixedBatchNorm": BottleneckWithFixedBa
 _STEM_MODULES = {
     "StemWithFixedBatchNorm": StemWithFixedBatchNorm,
     "StemWithFixedBatchNormPanMulImg": StemWithFixedBatchNormPanMulImg,
-    "StemWithFixedBatchNormPanMulImgPansharpening": StemWithFixedBatchNormPanMulImgPansharpening
+    "StemWithFixedBatchNormPanMulImgPansharpening": StemWithFixedBatchNormPanMulImgPansharpening,
+    "StemWithFixedBatchNormPanMulImgPansharpeningCatPan": StemWithFixedBatchNormPanMulImgPansharpeningCatPan,
+    "StemWithFixedBatchNormPansharpeningImg": StemWithFixedBatchNormPansharpeningImg
 }
 
 _STAGE_SPECS = {

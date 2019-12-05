@@ -1,0 +1,3 @@
+CUDA_VISIBLE_DEVICES=0 python -m torch.distributed.launch --master_port=$((RANDOM + 10000)) --nproc_per_node=1 tools/train_net.py --config-file "configs/zz/e2e_faster_rcnn_X_101_32x8d_FPN_atbox_1x_gpu3_trec.yaml"
+CUDA_VISIBLE_DEVICES=1 python -m torch.distributed.launch --master_port=$((RANDOM + 10000)) --nproc_per_node=1 tools/train_net.py --config-file "configs/zz/e2e_faster_rcnn_X_101_32x8d_FPN_atbox_1x_gpu3_trec.yaml"
+CUDA_VISIBLE_DEVICES=4 python -m torch.distributed.launch --master_port=$((RANDOM + 10000)) --nproc_per_node=1 tools/train_net.py --config-file "configs/zz/e2e_faster_rcnn_X_101_32x8d_FPN_atbox_1x_gpu3_trec.yaml"

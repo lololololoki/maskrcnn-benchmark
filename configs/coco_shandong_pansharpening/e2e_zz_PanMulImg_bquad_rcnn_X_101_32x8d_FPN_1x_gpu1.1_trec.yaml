@@ -4,6 +4,7 @@ MODEL:
   BACKBONE:
     CONV_BODY: "R-101-FPN"
     OUT_CHANNELS: 256
+    USE_PANMULIMG_FPN: True
   RPN:
     USE_FPN: True
     ANCHOR_STRIDE: (4, 8, 16, 32, 64)
@@ -18,7 +19,7 @@ MODEL:
     POOLER_RESOLUTION: 7
     POOLER_SCALES: (0.25, 0.125, 0.0625, 0.03125)
     POOLER_SAMPLING_RATIO: 2
-    FEATURE_EXTRACTOR: "FPN2MLPFeatureExtractorAT"
+    FEATURE_EXTRACTOR: "FPN2MLPFeatureExtractor"
     PREDICTOR: "FPNPredictor"
   ROI_MASK_HEAD:
     POOLER_SCALES: (0.25, 0.125, 0.0625, 0.03125)
@@ -29,14 +30,12 @@ MODEL:
     RESOLUTION: 28
     SHARE_BOX_FEATURE_EXTRACTOR: False
   RESNETS:
+    STEM_FUNC: "StemWithFixedBatchNormPanMulImg"
     STRIDE_IN_1X1: False
     NUM_GROUPS: 32
     WIDTH_PER_GROUP: 8
   MASK_ON: False
   BQUAD_ON: True
-DATASETS:
-  TRAIN: ("coco_qinghai_train_bquad",)
-  TEST: ("coco_qinghai_test_bquad",)
 INPUT:
   # MIN_SIZE_TRAIN: 320
   # MAX_SIZE_TRAIN: 320
@@ -46,8 +45,11 @@ INPUT:
   MAX_SIZE_TRAIN: 512
   MIN_SIZE_TEST: 512
   MAX_SIZE_TEST: 512
+DATASETS:
+  TRAIN: ("coco_shandong_pansharpening_train_trec",)
+  TEST: ("coco_shandong_pansharpening_test_trec",)
 DATALOADER:
-  NUM_WORKERS: 4
+  NUM_WORKERS: 8
   SIZE_DIVISIBILITY: 32
 SOLVER:
   #gpu 8
@@ -56,11 +58,11 @@ SOLVER:
   WEIGHT_DECAY: 0.0001
   #STEPS: (120000, 160000)
   #MAX_ITER: 180000
-  STEPS: (100000000, 150000000)
-  MAX_ITER: 200000000
-  IMS_PER_BATCH: 4
-  CHECKPOINT_PERIOD: 25000000000
+  STEPS: (1000000000, 1500000000)
+  MAX_ITER: 1000000000
+  IMS_PER_BATCH: 7
+  CHECKPOINT_PERIOD: 10000000000
 TEST:
   IMS_PER_BATCH: 3
 # OUTPUT_DIR: "./output/mapping-challenge"
-OUTPUT_DIR: "./output/coco_qinghai_urban/e2e_faster_rcnn_R_101_32x8d_FPN_atbox_1x_gpu3_bquad_zz"
+OUTPUT_DIR: "./output/coco_shandong_pansharpening_zz/e2e_PanMulImg_bquad_rcnn_X_101_32x8d_FPN_1x_gpu3_trec"

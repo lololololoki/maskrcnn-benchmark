@@ -149,22 +149,6 @@ class FastRCNNLossComputation(object):
             labels_pos = labels[sampled_pos_inds_subset]
             map_inds = 10 * labels_pos[:, None] + torch.tensor([0, 1, 2, 3, 4, 5, 6, 7, 8, 9], device=device)
 
-            def smooth_l1_loss_tqr(input, target, beta=1. / 9, size_average=True):
-                """
-                very similar to the smooth_l1_loss from pytorch, but with
-                the extra beta parameter
-                """
-                n = torch.abs(input - target)
-                cond = n < beta
-                loss = torch.where(cond, 0.5 * n ** 2 / beta, n - 0.5 * beta)
-
-                cond_l = loss < 30
-                loss = torch.where(cond_l, loss, (loss / 107374182))
-
-                if size_average:
-                    return loss.mean()
-                return loss.sum()
-
             bquad_loss = smooth_l1_loss(
                 bquad_regression[sampled_pos_inds_subset[:, None], map_inds],
                 bquad_targets[sampled_pos_inds_subset],
@@ -173,7 +157,7 @@ class FastRCNNLossComputation(object):
             )
 
             # bquad_loss = bquad_loss / labels.numel() / 1.3
-            bquad_loss = bquad_loss / labels.numel()
+            # bquad_loss = bquad_loss / labels.numel()
             # 2018年12月17日12点55分
             # cond = bquad_loss < 10
             # bquad_loss = torch.where(cond, bquad_loss, bquad_loss / 2)
@@ -188,25 +172,12 @@ class FastRCNNLossComputation(object):
             # cond = bquad_loss < 7
             # bquad_loss = torch.where(cond, bquad_loss, (bquad_loss / 20) + 6.6)
 
-            if_PanMulImg_R_101 = True
-
-            if if_PanMulImg_R_101:
-                cond = bquad_loss < 7
-                bquad_loss = torch.where(cond, bquad_loss, (bquad_loss / 20) + 6.6)
-            else:
-                cond_l = bquad_loss < 100
-                cond = bquad_loss < 5
-                bquad_loss = torch.where(cond, bquad_loss,
-                                         torch.where(cond_l, (bquad_loss / 20) + 5, (bquad_loss / 1073741824) + 5))
-
             # PanMulImg R-101
             # cond = bquad_loss < 7
             # bquad_loss = torch.where(cond, bquad_loss, (bquad_loss / 200) + 3)
-
-            #
-            # cond_l = bquad_loss < 100
-            # cond = bquad_loss < 5
-            # bquad_loss = torch.where(cond, bquad_loss, torch.where(cond_l, (bquad_loss / 20) + 5, (bquad_loss / 1073741824) + 5))
+            cond_l = bquad_loss < 20
+            cond = bquad_loss < 7
+            bquad_loss = torch.where(cond, bquad_loss, torch.where(cond_l, (bquad_loss / 20) + 6.6, (bquad_loss / 1073741824) + 6.6))
 
             """
             for PAN&MUL input
@@ -214,7 +185,7 @@ class FastRCNNLossComputation(object):
             # cond = bquad_loss < 5
             # bquad_loss = torch.where(cond, bquad_loss, torch.tensor(5.0).to(device))
 
-            # bquad_loss = bquad_loss / labels.numel()
+            bquad_loss = bquad_loss / labels.numel()
 
             return bquad_loss
 

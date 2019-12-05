@@ -172,9 +172,9 @@ def main():
     logger.info("Running with config:\n{}".format(cfg))
 
     model = train(cfg, args.local_rank, args.distributed)
-
     # if not args.skip_test:
-        # test(cfg, model, args.distributed)
+    #     test(cfg, model, args.distributed)
+    test(cfg, model, args.distributed)
 
 
 if __name__ == "__main__":

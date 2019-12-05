@@ -44,10 +44,10 @@ INPUT:
   MIN_SIZE_TEST: 512
   MAX_SIZE_TEST: 512
 DATASETS:
-  TRAIN: ("coco_qinghai_urban_train_trec", "coco_qinghai_suburban_train_trec", "coco_mapping_challenge_train-small", )
+  TRAIN: ("coco_qinghai_rural_train_trec", "coco_qinghai_urban_train_trec", "coco_qinghai_suburban_train_trec", "coco_qinghai_urban_test_trec", "coco_qinghai_suburban_test_trec", "coco_qinghai_rural_test_trec", "coco_mapping_challenge_train_small", )
   TEST: ("coco_qinghai_urban_test_trec", "coco_qinghai_suburban_test_trec", "coco_qinghai_rural_test_trec")
 DATALOADER:
-  NUM_WORKERS: 4
+  NUM_WORKERS: 8
   SIZE_DIVISIBILITY: 32
 SOLVER:
   #gpu 8
@@ -59,7 +59,7 @@ SOLVER:
   STEPS: (20000, 150000)
   MAX_ITER: 20000
   IMS_PER_BATCH: 3
-  CHECKPOINT_PERIOD: 100
+  CHECKPOINT_PERIOD: 1000
 TEST:
   IMS_PER_BATCH: 3
 # OUTPUT_DIR: "./output/mapping-challenge"

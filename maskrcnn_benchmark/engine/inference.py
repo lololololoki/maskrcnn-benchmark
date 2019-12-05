@@ -640,8 +640,8 @@ def myinference(
         coco_results["bbox"] = prepare_for_coco_detection(predictions, dataset)
     if "segm" in iou_types:
         logger.info("Preparing segm results")
-        coco_results["segm"] = prepare_for_coco_bquad(predictions, dataset)
-        # coco_results["segm"] = prepare_for_coco_bquad_pic(predictions, dataset)
+        # coco_results["segm"] = prepare_for_coco_bquad(predictions, dataset)
+        coco_results["segm"] = prepare_for_coco_bquad_pic(predictions, dataset)
     # if "bquad" in iou_types:
     #     logger.info("Preparing bquad results")
     #     coco_results["bquad"] = prepare_for_coco_bquad(predictions, dataset)
