@@ -9,6 +9,7 @@ from maskrcnn_benchmark.structures.image_list import to_image_list
 from maskrcnn_benchmark.modeling.roi_heads.mask_head.inference import Masker
 from maskrcnn_benchmark import layers as L
 from maskrcnn_benchmark.utils import cv2_util
+from torchvision.transforms import functional as F
 
 
 class COCODemo(object):
@@ -141,7 +142,10 @@ class COCODemo(object):
                 of the detection properties can be found in the fields of
                 the BoxList via `prediction.fields()`
         """
-        predictions = self.compute_prediction_no_features(image)
+        if image.shape[2] > 3:
+            predictions = self.compute_prediction_no_features_PanMulImg(image)
+        else:
+            predictions = self.compute_prediction_no_features(image)
         top_predictions = self.select_top_predictions(predictions)
         return top_predictions
 
@@ -158,6 +162,44 @@ class COCODemo(object):
         """
         # apply pre-processing to image
         image = self.transforms(original_image)
+        # convert to an ImageList, padded so that it is divisible by
+        # cfg.DATALOADER.SIZE_DIVISIBILITY
+        image_list = to_image_list(image, self.cfg.DATALOADER.SIZE_DIVISIBILITY)
+        image_list = image_list.to(self.device)
+        # compute predictions
+        with torch.no_grad():
+            # print(self.model)
+            predictions = self.model(image_list)
+        predictions = [o.to(self.cpu_device) for o in predictions]
+
+        # always single image is passed at a time
+        prediction = predictions[0]
+
+        # reshape prediction (a BoxList) into the original image size
+        height, width = original_image.shape[:-1]
+        prediction = prediction.resize((width, height))
+
+        if prediction.has_field("mask"):
+            # if we have masks, paste the masks in the right position
+            # in the image, as defined by the bounding boxes
+            masks = prediction.get_field("mask")
+            # always single image is passed at a time
+            masks = self.masker([masks], [prediction])[0]
+            prediction.add_field("mask", masks)
+        return prediction
+
+    def compute_prediction_no_features_PanMulImg(self, original_image):
+        """
+        Arguments:
+            original_image (np.ndarray): an image as returned by OpenCV
+
+        Returns:
+            prediction (BoxList): the detected objects. Additional information
+                of the detection properties can be found in the fields of
+                the BoxList via `prediction.fields()`
+        """
+        # apply pre-processing to image
+        image = F.to_tensor(original_image)
         # convert to an ImageList, padded so that it is divisible by
         # cfg.DATALOADER.SIZE_DIVISIBILITY
         image_list = to_image_list(image, self.cfg.DATALOADER.SIZE_DIVISIBILITY)
